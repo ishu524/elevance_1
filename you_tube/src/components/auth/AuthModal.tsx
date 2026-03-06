@@ -19,14 +19,26 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-    const { initiateLogin, handlegooglesignin, loading } = useUser();
+    const { initiateLogin, verifyOTP, handlegooglesignin, loading } = useUser();
     const [email, setEmail] = useState("");
-    const [view, setView] = useState<"choice" | "email">("choice");
+    const [otp, setOtp] = useState("");
+    const [userId, setUserId] = useState<string | null>(null);
+    const [view, setView] = useState<"choice" | "email" | "otp">("choice");
 
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) return;
-        await initiateLogin({ email });
+        const res = await initiateLogin({ email });
+        if (res?.success) {
+            setUserId(res.userId);
+            setView("otp");
+        }
+    };
+
+    const handleOTPSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!otp || !userId) return;
+        await verifyOTP(userId, otp);
         onClose();
     };
 
@@ -74,7 +86,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                 Sign in with Email
                             </Button>
                         </>
-                    ) : (
+                    ) : view === "email" ? (
                         <form onSubmit={handleEmailSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">
@@ -107,6 +119,39 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                 className="w-full text-center text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors"
                             >
                                 Go Back
+                            </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleOTPSubmit} className="space-y-6">
+                            <div className="space-y-2 text-center">
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                                    Enter 6-digit Code sent to {email}
+                                </label>
+                                <Input
+                                    type="text"
+                                    maxLength={6}
+                                    placeholder="· · · · · ·"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    className="text-center text-3xl font-black tracking-[1rem] py-8 rounded-2xl border-2 focus:border-red-500 transition-all bg-gray-50 dark:bg-zinc-800 border-transparent"
+                                    required
+                                />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={loading || otp.length !== 6}
+                                className="w-full py-7 text-lg font-black rounded-2xl shadow-lg bg-red-600 hover:bg-red-700 transition-all text-white"
+                            >
+                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Verify & Sign In"}
+                            </Button>
+
+                            <button
+                                type="button"
+                                onClick={() => setView("email")}
+                                className="w-full text-center text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                Change Email
                             </button>
                         </form>
                     )}

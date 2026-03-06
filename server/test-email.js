@@ -14,10 +14,11 @@ const testEmail = async () => {
         process.exit(1);
     }
 
+    console.log("Creating transporter...");
     const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
+        host: process.env.EMAIL_HOST,
+        port: parseInt(process.env.EMAIL_PORT) || 465,
+        secure: process.env.EMAIL_PORT == "465",
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
@@ -27,6 +28,7 @@ const testEmail = async () => {
         }
     });
 
+    console.log("Transporter created. Preparing mail options...");
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: process.env.EMAIL_USER, // Sending to yourself to test
@@ -35,6 +37,7 @@ const testEmail = async () => {
         html: "<h1>Success! 🎉</h1><p>Your Gmail configuration for YourTube is 100% correct.</p>",
     };
 
+    console.log("Sending email...");
     try {
         const info = await transporter.sendMail(mailOptions);
         console.log("✅ SUCCESS! Email sent to your inbox: " + info.messageId);
