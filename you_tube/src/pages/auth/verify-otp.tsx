@@ -3,24 +3,24 @@ import { useRouter } from "next/router";
 import { useUser } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, ShieldCheck, Mail, MessageSquare } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 
 export default function VerifyOTP() {
     const router = useRouter();
-    const { userId, method, mockOTP } = router.query;
+    const { userId, method } = router.query;
     const { verifyOTP, loading } = useUser();
     const [otp, setOtp] = useState("");
     const [timer, setTimer] = useState(300); // 5 minutes
 
     useEffect(() => {
-        if (!userId) {
+        if (router.isReady && !userId) {
             // router.push("/");
         }
         const interval = setInterval(() => {
             setTimer((prev) => (prev > 0 ? prev - 1 : 0));
         }, 1000);
         return () => clearInterval(interval);
-    }, [userId]);
+    }, [userId, router.isReady]);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -81,16 +81,6 @@ export default function VerifyOTP() {
                         {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Verify & Login"}
                     </Button>
                 </form>
-
-                {mockOTP && (
-                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl border border-yellow-100 dark:border-yellow-900/30">
-                        <div className="flex gap-3 text-yellow-800 dark:text-yellow-400">
-                            <div className="text-xs font-medium">
-                                <strong>DEV MODE:</strong> Your test OTP is <code className="bg-yellow-200 dark:bg-yellow-800 px-2 py-0.5 rounded font-black">{mockOTP}</code>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 <p className="text-center text-xs text-gray-400 font-medium">
                     By verifying, you agree to our Terms and Conditions.

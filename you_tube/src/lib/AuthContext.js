@@ -51,7 +51,6 @@ export const UserProvider = ({ children }) => {
                     query: {
                         userId: response.data.userId,
                         method: response.data.authMethod,
-                        mockOTP: response.data.mockOTP // Only in dev
                     }
                 });
             }

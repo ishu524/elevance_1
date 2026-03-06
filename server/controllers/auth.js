@@ -79,9 +79,7 @@ export const login = async (req, res) => {
             userId: existingUser._id,
             theme: theme,
             authMethod: existingUser.authMethod,
-            state: state,
-            isDevMode: true, // For debugging/test visibility
-            mockOTP: process.env.NODE_ENV === "development" ? otp : undefined
+            state: state
         });
 
     } catch (error) {
