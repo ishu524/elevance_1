@@ -11,10 +11,7 @@ import { getMediaUrl } from '@/lib/utils';
 
 interface LikedItem {
     _id: string;
-    videoid: any;
-    viewer: string;
-    watchedon: string;
-    video: {
+    videoid: {
         _id: string;
         videotitle: string;
         videochanel: string;
@@ -22,6 +19,8 @@ interface LikedItem {
         createdAt: string;
         filepath?: string;
     };
+    viewer: string;
+    likedon: string;
 }
 const LikedContent = () => {
     const { user } = useUser();
@@ -40,8 +39,9 @@ const LikedContent = () => {
         if (!user) return;
         try {
             const res = await axiosInstance.get(`/like/${user?._id}`);
-            // Check if the response matches the expected structure
-            setLike(res.data);
+            // Filter out any liked items where the video might have been deleted (videoid is null)
+            const validLikes = res.data.filter((item: any) => item.videoid);
+            setLike(validLikes);
         } catch (error) {
             console.error("Failed to load liked videos:", error);
         } finally {
@@ -98,10 +98,10 @@ const LikedContent = () => {
             <div className="space-y-4">
                 {Like.map((item) => (
                     <div key={item._id} className="flex gap-4 group">
-                        <Link href={`/watch/${item.video._id}`} className="`flex-shrink-0`">
+                        <Link href={`/watch/${item.videoid._id}`} className="`flex-shrink-0`">
                             <div className="relative w-40 aspect-video bg-gray-100 rounded overflow-hidden">
                                 <video
-                                    src={getMediaUrl(item.video?.filepath)}
+                                    src={getMediaUrl(item.videoid?.filepath)}
                                     className="object-cover group-hover:scale-105 transition-transform duration-200"
                                     preload="metadata"
                                 />
@@ -109,23 +109,23 @@ const LikedContent = () => {
                         </Link>
 
                         <div className="flex-1 min-w-0">
-                            <Link href={`/watch/${item.video._id}`}>
+                            <Link href={`/watch/${item.videoid._id}`}>
                                 <h3 className="font-medium text-sm line-clamp-2 group-hover:text-blue-600 mb-1">
-                                    {item.video.videotitle}
+                                    {item.videoid.videotitle}
                                 </h3>
                             </Link>
 
                             <p className="text-sm text-gray-600">
-                                {item.video.videochanel}
+                                {item.videoid.videochanel}
                             </p>
 
                             <p className="text-sm text-gray-600">
-                                {item.video.views.toLocaleString()} views •{" "}
-                                {formatDistanceToNow(new Date(item.video.createdAt))} ago
+                                {item.videoid.views.toLocaleString()} views •{" "}
+                                {formatDistanceToNow(new Date(item.videoid.createdAt))} ago
                             </p>
 
                             <p className="text-xs text-gray-500 mt-1">
-                                Liked {formatDistanceToNow(new Date(item.watchedon))} ago
+                                Liked {formatDistanceToNow(new Date(item.likedon || (item as any).createdAt))} ago
                             </p>
                         </div>
 
