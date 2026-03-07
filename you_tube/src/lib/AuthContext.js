@@ -56,7 +56,7 @@ export const UserProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("Login Initiate Error:", error);
-            const errMsg = error.response?.data?.message || "Could not connect to the server. Please check your internet or NEXT_PUBLIC_BACKEND_URL.";
+            const errMsg = error.response?.data?.message || "Could not connect to the server. Please check your internet or NEXT_PUBLIC_API_URL.";
             toast.error(errMsg);
         } finally {
             setLoading(false);

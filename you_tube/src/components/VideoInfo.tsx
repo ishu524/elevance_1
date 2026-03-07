@@ -16,6 +16,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useUser } from "@/lib/AuthContext";
 import axiosInstance from "@/lib/axiosinstance";
 import { toast } from "sonner";
+import { getMediaUrl } from "@/lib/utils";
 
 
 
@@ -138,8 +139,8 @@ const VideoInfo = ({ video }: any) => {
 
                 // Simulate actual file download trigger
                 const link = document.createElement('a');
-                // The filePath needs to be correctly hosted/configured. For testing, assuming abstract URL.
-                link.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${res.data.filePath}`;
+                // The filePath needs to be correctly hosted/configured.
+                link.href = getMediaUrl(res.data.filePath);
                 link.download = res.data.fileName || "video.mp4";
                 document.body.appendChild(link);
                 link.click();

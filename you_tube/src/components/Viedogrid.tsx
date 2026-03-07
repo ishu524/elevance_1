@@ -16,7 +16,7 @@ const Videogrid = () => {
                 console.error("Error fetching videos:", err);
                 const isProd = process.env.NODE_ENV === "production";
                 setError(isProd
-                    ? "Failed to connect to backend. Please ensure NEXT_PUBLIC_BACKEND_URL is set correctly in Vercel."
+                    ? "Failed to connect to backend. Please ensure NEXT_PUBLIC_API_URL is set correctly in Vercel."
                     : "Failed to load videos. Please ensure your local server is running on port 5000.");
                 setvideo([]); // Optionally set videos to an empty array to prevent map error
             } finally {

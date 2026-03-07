@@ -1,10 +1,10 @@
 import axios from "axios";
 
 const isProd = process.env.NODE_ENV === "production";
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+const backendUrl = process.env.NEXT_PUBLIC_API_URL;
 
 if (isProd && !backendUrl) {
-    console.error("CRITICAL: NEXT_PUBLIC_BACKEND_URL is missing in production! Please set it in Vercel settings.");
+    console.error("CRITICAL: NEXT_PUBLIC_API_URL is missing in production! Please set it in Vercel settings.");
 }
 
 const axiosInstance = axios.create({

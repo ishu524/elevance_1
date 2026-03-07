@@ -22,9 +22,8 @@ export const useWebRTC = (userId: string, onIncomingCall?: (from: string, name: 
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const pendingCandidates = useRef<RTCIceCandidate[]>([]);
 
-    // Initialize Socket Connection
     useEffect(() => {
-        const newSocket = io(process.env.NEXT_PUBLIC_SIGNALING_URL || 'http://localhost:5000');
+        const newSocket = io(process.env.NEXT_PUBLIC_SIGNALING_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
