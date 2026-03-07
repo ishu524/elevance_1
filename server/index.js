@@ -25,25 +25,19 @@ const allowedOrigins = [
 ];
 
 // ✅ ROBUST CORS CONFIGURATION
+
+
 app.use(
     cors({
-        origin: function (origin, callback) {
-            if (!origin) return callback(null, true);
-
-            if (!allowedOrigins.includes(origin)) {
-                return callback(new Error("CORS not allowed from this origin"), false);
-            }
-
-            return callback(null, true);
-        },
+        origin: allowedOrigins,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
 
-// ✅ HANDLE PREFLIGHT REQUESTS
-app.options("*", cors());
+// FIXED LINE
+app.options("/*", cors());
 
 // ✅ SECURITY HEADERS (Fix COOP Issue)
 app.use((req, res, next) => {
