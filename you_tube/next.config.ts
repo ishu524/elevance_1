@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   reactStrictMode: true,
   env: {
-    BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    BACKEND_URL: process.env.NEXT_PUBLIC_API_URL,
   },
   async headers() {
     return [
@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Cross-Origin-Opener-Policy",
-            value: "unsafe-none",
+            value: "same-origin-allow-popups",
           },
         ],
       },

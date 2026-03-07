@@ -9,6 +9,7 @@ if (isProd && !backendUrl) {
 
 const axiosInstance = axios.create({
     baseURL: backendUrl || "http://localhost:5000",
+    withCredentials: true,
 });
 
 export default axiosInstance;
