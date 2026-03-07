@@ -18,28 +18,20 @@ import downloadroutes from "./routes/download.js";
 
 const app = express();
 
-// ✅ ALLOWED ORIGINS
-const allowedOrigins = [
-    "http://localhost:3000",
-    "https://elevance-1.vercel.app"
-];
-
 // ✅ ROBUST CORS CONFIGURATION
-
-
 app.use(
     cors({
-        origin: allowedOrigins,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        origin: [
+            "http://localhost:3000",
+            "https://elevance-1.vercel.app"
+        ],
+        methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
 
-// FIXED LINE
-app.options("/*", cors());
-
-// ✅ SECURITY HEADERS (Fix COOP Issue)
+// ✅ SECURITY HEADERS (Fix for COOP Issue)
 app.use((req, res, next) => {
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
@@ -49,13 +41,12 @@ app.use((req, res, next) => {
 // ✅ STRIPE WEBHOOK HANDLING
 app.use((req, res, next) => {
     if (req.originalUrl === "/api/payment/webhook") {
-        next();
+        next(); // Handled by express.raw() in routes
     } else {
         express.json({ limit: "30mb" })(req, res, next);
     }
 });
 
-// ✅ URL ENCODED DATA
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 
 // ✅ TEST ROUTE
@@ -74,74 +65,60 @@ app.use("/comment", commentroutes);
 app.use("/api/payment", paymentroutes);
 app.use("/download", downloadroutes);
 
-// ✅ CREATE HTTP SERVER
+// ✅ HTTP SERVER
 const httpServer = http.createServer(app);
 
 // ✅ SOCKET.IO WITH CORS
 const io = new Server(httpServer, {
     cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST"],
-        credentials: true
+        origin: [
+            "http://localhost:3000",
+            "https://elevance-1.vercel.app"
+        ],
+        methods: ["GET", "POST"]
     }
 });
 
-// ✅ SOCKET USER MAP
 const socketUsers = new Map();
 
-// ✅ SOCKET CONNECTION
-io.on("connection", (socket) => {
-
-    socket.on("register", (userId) => {
+io.on('connection', (socket) => {
+    socket.on('register', (userId) => {
         socketUsers.set(userId, socket.id);
         socket.userId = userId;
     });
 
-    socket.on("call-user", ({ userToCall, signalData, from, fromName }) => {
+    socket.on('call-user', ({ userToCall, signalData, from, fromName }) => {
         const targetSocketId = socketUsers.get(userToCall);
         if (targetSocketId) {
-            io.to(targetSocketId).emit("incoming-call", {
-                signal: signalData,
-                from,
-                fromName
-            });
+            io.to(targetSocketId).emit('incoming-call', { signal: signalData, from, fromName });
         }
     });
 
-    socket.on("accept-call", ({ signal, to }) => {
+    socket.on('accept-call', ({ signal, to }) => {
         const targetSocketId = socketUsers.get(to);
         if (targetSocketId) {
-            io.to(targetSocketId).emit("call-accepted", signal);
+            io.to(targetSocketId).emit('call-accepted', signal);
         }
     });
 
-    socket.on("reject-call", ({ to }) => {
+    socket.on('reject-call', ({ to }) => {
         const targetSocketId = socketUsers.get(to);
-        if (targetSocketId) {
-            io.to(targetSocketId).emit("call-rejected");
-        }
+        if (targetSocketId) io.to(targetSocketId).emit('call-rejected');
     });
 
-    socket.on("end-call", ({ to }) => {
+    socket.on('end-call', ({ to }) => {
         const targetSocketId = socketUsers.get(to);
-        if (targetSocketId) {
-            io.to(targetSocketId).emit("call-ended");
-        }
+        if (targetSocketId) io.to(targetSocketId).emit('call-ended');
     });
 
-    socket.on("ice-candidate", ({ to, candidate }) => {
+    socket.on('ice-candidate', ({ to, candidate }) => {
         const targetSocketId = socketUsers.get(to);
-        if (targetSocketId) {
-            io.to(targetSocketId).emit("ice-candidate", candidate);
-        }
+        if (targetSocketId) io.to(targetSocketId).emit('ice-candidate', candidate);
     });
 
-    socket.on("disconnect", () => {
-        if (socket.userId) {
-            socketUsers.delete(socket.userId);
-        }
+    socket.on('disconnect', () => {
+        if (socket.userId) socketUsers.delete(socket.userId);
     });
-
 });
 
 // ✅ SERVER START
@@ -164,3 +141,4 @@ mongoose
     });
 
 console.log("Server setup complete, ready for connections.");
+
