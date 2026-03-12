@@ -2,16 +2,16 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import dns from "dns";
 
-dns.setDefaultResultOrder("ipv4first");
-
 dotenv.config();
 
+/* FORCE IPv4 (very important for Render) */
+dns.setDefaultResultOrder("ipv4first");
+
+/* SMTP transporter */
 const transporter = nodemailer.createTransport({
-    service: "gmail",
-    secure: false,
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 100,
+    host: "smtp.gmail.com",
+    port: 587,            // force port 587
+    secure: false,        // must be false for 587
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -20,11 +20,12 @@ const transporter = nodemailer.createTransport({
         rejectUnauthorized: false
     },
     connectionTimeout: 20000,
-    greetingTimeout: 15000,
+    greetingTimeout: 20000,
     socketTimeout: 20000
 });
 
-transporter.verify(function (error, success) {
+/* Verify SMTP connection */
+transporter.verify((error, success) => {
     if (error) {
         console.error("SMTP connection error:", error);
     } else {
