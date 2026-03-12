@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  reactCompiler: true,
+  reactCompiler: false,
   reactStrictMode: true,
   env: {
     BACKEND_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+  },
+  // @ts-ignore
+  turbopack: {
+    root: ".",
   },
 };
 
