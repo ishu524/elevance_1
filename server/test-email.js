@@ -1,5 +1,9 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import dns from "dns";
+
+// ✅ FORCE IPv4 for Render compatibility
+dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config();
 
@@ -18,14 +22,18 @@ const testEmail = async () => {
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
-        secure: false,
+        secure: false, // true for 465, false for other ports
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
         },
         tls: {
-            rejectUnauthorized: false
-        }
+            rejectUnauthorized: false,
+            minVersion: "TLSv1.2"
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000
     });
 
     console.log("Transporter created. Preparing mail options...");

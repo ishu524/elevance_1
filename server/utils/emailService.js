@@ -1,19 +1,30 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import dns from "dns";
+
+// ✅ FORCE IPv4: Render often fails with IPv6 for outgoing SMTP connections.
+// This tells Node.js to prefer IPv4 addresses when resolving hostnames.
+dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false
-  }
+    // Render/Cloud environments sometimes have strict certificate checks
+    rejectUnauthorized: false,
+    minVersion: 'TLSv1.2'
+  },
+  // Adding connection timeout for reliability
+  connectionTimeout: 10000, 
+  greetingTimeout: 5000,
+  socketTimeout: 10000
 });
 
 export const sendOTPEmail = async (email, otp) => {
