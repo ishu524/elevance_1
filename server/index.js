@@ -1,4 +1,10 @@
 import dotenv from "dotenv";
+import dns from "dns";
+
+// ✅ FORCE IPv4: Render and other cloud platforms often fail with IPv6 for outgoing SMTP.
+// This ensures Node.js prefers IPv4 when connecting to services like Gmail.
+dns.setDefaultResultOrder('ipv4first');
+
 dotenv.config();
 
 import express from "express";
