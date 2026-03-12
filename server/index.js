@@ -21,8 +21,12 @@ const app = express();
 // ✅ ROBUST CORS CONFIGURATION
 app.use(
     cors({
-        origin: "*",
+        origin: [
+            "http://localhost:3000",
+            "https://elevance-1.vercel.app"
+        ],
         methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
