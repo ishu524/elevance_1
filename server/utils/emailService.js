@@ -2,29 +2,34 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import dns from "dns";
 
-// ✅ FORCE IPv4: Render often fails with IPv6 for outgoing SMTP connections.
-// This tells Node.js to prefer IPv4 addresses when resolving hostnames.
-dns.setDefaultResultOrder('ipv4first');
+dns.setDefaultResultOrder("ipv4first");
 
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    // Render/Cloud environments sometimes have strict certificate checks
-    rejectUnauthorized: false,
-    minVersion: 'TLSv1.2'
-  },
-  // Adding connection timeout for reliability
-  connectionTimeout: 10000, 
-  greetingTimeout: 5000,
-  socketTimeout: 10000
+    service: "gmail",
+    secure: false,
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 100,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
+    },
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000
+});
+
+transporter.verify(function (error, success) {
+    if (error) {
+        console.error("SMTP connection error:", error);
+    } else {
+        console.log("SMTP server is ready to send emails");
+    }
 });
 
 export const sendOTPEmail = async (email, otp) => {
@@ -59,7 +64,7 @@ export const sendOTPEmail = async (email, otp) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log("OTP Email sent: %s", info.messageId);
+        console.log("OTP Email sent:", info.messageId);
         return info;
     } catch (error) {
         console.error("OTP Email Error:", error);
@@ -111,7 +116,7 @@ export const sendInvoiceEmail = async (user, planDetails) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent: %s", info.messageId);
+        console.log("Email sent:", info.messageId);
         return info;
     } catch (error) {
         console.error("Email Service Error:", error);
