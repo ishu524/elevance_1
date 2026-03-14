@@ -12,6 +12,7 @@ const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,            // force port 587
     secure: false,        // must be false for 587
+    family: 4,            // force IPv4 exclusively to prevent ENETUNREACH on IPv6 in Render
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
