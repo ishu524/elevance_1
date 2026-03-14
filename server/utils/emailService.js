@@ -1,46 +1,26 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 import dotenv from "dotenv";
-import dns from "dns";
 
 dotenv.config();
 
-/* FORCE IPv4 (very important for Render) */
-dns.setDefaultResultOrder("ipv4first");
-
-/* SMTP transporter */
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,            // force port 587
-    secure: false,        // must be false for 587
-    family: 4,            // force IPv4 exclusively to prevent ENETUNREACH on IPv6 in Render
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000
-});
-
-/* Verify SMTP connection */
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("SMTP connection error:", error);
-    } else {
-        console.log("SMTP server is ready to send emails");
-    }
-});
+// We are now using Brevo's HTTP API via Axios to completely bypass 
+// Render's restriction on outbound SMTP ports (25, 465, 587).
+// Ensure you have added BREVO_API_KEY to your .env file!
 
 export const sendOTPEmail = async (email, otp) => {
     try {
-        const mailOptions = {
-            from: `"YourTube Auth" <${process.env.EMAIL_USER}>`,
-            to: email,
+        const data = {
+            sender: {
+                name: "YourTube Auth",
+                email: process.env.EMAIL_USER // This email must be verified as a sender in your Brevo account
+            },
+            to: [
+                {
+                    email: email
+                }
+            ],
             subject: "Your OTP for YourTube Login",
-            html: `
+            htmlContent: `
                 <div style="font-family: 'Inter', sans-serif; max-width: 500px; margin: auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <div style="text-align: center; margin-bottom: 20px;">
                         <h1 style="color: #ef4444; margin: 0; font-size: 28px; font-weight: 900;">Your-Tube</h1>
@@ -62,14 +42,21 @@ export const sendOTPEmail = async (email, otp) => {
                         Secure Region-Based Authentication System
                     </p>
                 </div>
-            `,
+            `
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log("OTP Email sent:", info.messageId);
-        return info;
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', data, {
+            headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+            }
+        });
+
+        console.log("OTP Email sent successfully via Brevo API:", response.data);
+        return response.data;
     } catch (error) {
-        console.error("OTP Email Error:", error);
+        console.error("OTP Email Error:", error.response ? error.response.data : error.message);
     }
 };
 
@@ -78,15 +65,22 @@ export const sendInvoiceEmail = async (user, planDetails) => {
         const { planName, amount, paymentId, recipientEmail } = planDetails;
         const toEmail = recipientEmail || user.email;
 
-        const mailOptions = {
-            from: `"YourTube Support" <${process.env.EMAIL_USER}>`,
-            to: toEmail,
+        const data = {
+            sender: {
+                name: "YourTube Support",
+                email: process.env.EMAIL_USER // This email must be verified as a sender in your Brevo account
+            },
+            to: [
+                {
+                    email: toEmail
+                }
+            ],
             subject: "Subscription Upgrade Successful",
-            html: `
+            htmlContent: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
                     <h2 style="color: #10b981; text-align: center;">Payment Successful! 🎉</h2>
                     <p>Hello <strong>${user.name}</strong>,</p>
-                    <p style="font-size: 16px; font-weight: bold; color: #333 text-align: center;">Congratulations! You successfully done the payment.</p>
+                    <p style="font-size: 16px; font-weight: bold; color: #333; text-align: center;">Congratulations! You successfully done the payment.</p>
                     <p>Thank you for your purchase! Your subscription to the <strong>${planName} Plan</strong> is now active.</p>
                     
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -114,13 +108,20 @@ export const sendInvoiceEmail = async (user, planDetails) => {
                         If you have any questions, contact our support team.
                     </p>
                 </div>
-            `,
+            `
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent:", info.messageId);
-        return info;
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', data, {
+            headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+            }
+        });
+
+        console.log("Invoice Email sent successfully via Brevo API:", response.data);
+        return response.data;
     } catch (error) {
-        console.error("Email Service Error:", error);
+        console.error("Email Service Error:", error.response ? error.response.data : error.message);
     }
 };

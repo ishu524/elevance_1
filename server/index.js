@@ -130,7 +130,7 @@ io.on('connection', (socket) => {
 // ✅ SERVER START
 const PORT = process.env.PORT || 5000;
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Server and Signaling running on port ${PORT} 🚀`);
 });
 
