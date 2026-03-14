@@ -3,16 +3,15 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// We are now using Brevo's HTTP API via Axios to completely bypass 
-// Render's restriction on outbound SMTP ports (25, 465, 587).
-// Ensure you have added BREVO_API_KEY to your .env file!
+// Using Brevo's HTTP API via Axios to bypass SMTP port restrictions.
+// Ensure BREVO_API_KEY and EMAIL_USER (verified sender on Brevo) are in your .env file!
 
 export const sendOTPEmail = async (email, otp) => {
     try {
         const data = {
             sender: {
                 name: "YourTube Auth",
-                email: process.env.EMAIL_USER // This email must be verified as a sender in your Brevo account
+                email: process.env.EMAIL_USER // Important: MUST be your verified sender email
             },
             to: [
                 {
@@ -56,7 +55,7 @@ export const sendOTPEmail = async (email, otp) => {
         console.log("OTP Email sent successfully via Brevo API:", response.data);
         return response.data;
     } catch (error) {
-        console.error("OTP Email Error:", error.response ? error.response.data : error.message);
+        console.error("OTP Email Error via Brevo API:", error.response ? error.response.data : error.message);
     }
 };
 
@@ -68,7 +67,7 @@ export const sendInvoiceEmail = async (user, planDetails) => {
         const data = {
             sender: {
                 name: "YourTube Support",
-                email: process.env.EMAIL_USER // This email must be verified as a sender in your Brevo account
+                email: process.env.EMAIL_USER
             },
             to: [
                 {
@@ -80,7 +79,7 @@ export const sendInvoiceEmail = async (user, planDetails) => {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
                     <h2 style="color: #10b981; text-align: center;">Payment Successful! 🎉</h2>
                     <p>Hello <strong>${user.name}</strong>,</p>
-                    <p style="font-size: 16px; font-weight: bold; color: #333; text-align: center;">Congratulations! You successfully done the payment.</p>
+                    <p style="font-size: 16px; font-weight: bold; color: #333 text-align: center;">Congratulations! You successfully done the payment.</p>
                     <p>Thank you for your purchase! Your subscription to the <strong>${planName} Plan</strong> is now active.</p>
                     
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -122,6 +121,6 @@ export const sendInvoiceEmail = async (user, planDetails) => {
         console.log("Invoice Email sent successfully via Brevo API:", response.data);
         return response.data;
     } catch (error) {
-        console.error("Email Service Error:", error.response ? error.response.data : error.message);
+        console.error("Email Service Error via Brevo API:", error.response ? error.response.data : error.message);
     }
 };
